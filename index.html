@@ -6,93 +6,114 @@
     <title>Vibe Emotion - Conexão Real</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        #topo-oio { position: fixed; top: 0; width: 100%; z-index: 100; padding: 15px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
-        #user-info { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #00f2ea; }
-        #user-photo { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #00f2ea; object-fit: cover; }
         
-        #feed { height: 100vh; overflow-y: scroll; snap-type: y mandatory; scroll-behavior: smooth; }
+        /* ⌚ Topo OIO ONE Limpo */
+        #topo-vibe { position: fixed; top: 0; width: 100%; z-index: 100; padding: 15px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
+        #info-user { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #00f2ea; font-weight: bold; }
+        #foto-user { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #00f2ea; object-fit: cover; }
+        
+        /* 🔄 Feed Infinito */
+        #vibe-feed { height: 100vh; overflow-y: scroll; snap-type: y mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
         .vibe-slide { height: 100vh; width: 100vw; snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; background: #111; }
         video { width: 100%; height: 100%; object-fit: contain; }
 
-        .acoes { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-        .btn-n { background: none; border: none; font-size: 32px; filter: drop-shadow(0 0 5px #000); cursor: pointer; }
-        .label-v { font-size: 12px; font-weight: bold; margin-top: -10px; }
+        /* ❤️ Interação Nativa */
+        .lateral { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        .btn-acao { background: none; border: none; font-size: 35px; filter: drop-shadow(0 0 5px #000); cursor: pointer; color: #fff; }
+        .txt-v { font-size: 14px; font-weight: bold; margin-top: -10px; text-shadow: 1px 1px 2px #000; }
 
-        #btn-postar { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 25px; border-radius: 30px; font-weight: bold; border: none; z-index: 100; box-shadow: 0 0 15px rgba(0,242,234,0.4); }
+        /* 🎬 Botão Flutuante (Conexão Real) */
+        #btn-vibe { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 25px; border-radius: 30px; font-weight: bold; border: none; z-index: 100; box-shadow: 0 0 15px rgba(0,242,234,0.4); }
     </style>
 </head>
 <body>
 
-    <header id="topo-oio">
-        <div id="user-info">
-            <img id="user-photo" src="https://via.placeholder.com/30" alt="👤">
-            <span id="user-name">Michel • 18:58</span>
+    <header id="topo-vibe">
+        <div id="info-user">
+            <img id="foto-user" src="https://via.placeholder.com/32" alt="👤">
+            <span id="nome-user">Michel • ✨</span>
         </div>
-        <div style="font-size: 18px; cursor: pointer;" onclick="window.location.href='https://vibe-mensagens.vercel.app/'">💬</div>
+        <div style="font-size: 20px; cursor: pointer; color:#fff;" onclick="window.location.href='https://vibe-mensagens.vercel.app/'">💬</div>
     </header>
 
-    <div id="feed" onscroll="controlarVideos()">
+    <div id="vibe-feed" onscroll="gatilhoDeFoco()">
+        <div id="placeholder" class="vibe-slide">
+            <p style="text-align: center; padding: 20px; color: #888;">Toque abaixo para começar sua jornada de memórias 🎬</p>
         </div>
+    </div>
 
-    <button id="btn-postar" onclick="document.getElementById('input-v').click()">🎬 POSTAR VIBE</button>
-    <input type="file" id="input-v" accept="video/*" style="display:none" onchange="subirVibe(event)">
+    <button id="btn-vibe" onclick="document.getElementById('input-vibe').click()">🎬 POSTAR VIBE</button>
+    <input type="file" id="input-vibe" accept="video/*" style="display:none" onchange="processarVideo(event)">
 
     <script>
         // 🚀 GATILHO DE FOCO (Ponto 2: Auto-Pausar)
-        function controlarVideos() {
-            const slides = document.querySelectorAll('video');
-            slides.forEach(vid => {
+        function gatilhoDeFoco() {
+            const vibes = document.querySelectorAll('video');
+            vibes.forEach(vid => {
                 const rect = vid.getBoundingClientRect();
+                // Verifica se o vídeo está centralizado na tela
                 if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
-                    if (vid.paused) vid.play();
+                    if (vid.paused && vid.readyState >= 2) vid.play();
                 } else {
-                    vid.pause();
+                    if (!vid.paused) vid.pause();
                 }
             });
         }
 
-        // 🛡️ ENGENHARIA DE FILA (O que o 1 posta, o 2 vê)
-        // Nota: Para funcionar real, você precisa colar suas chaves do Firebase aqui
-        function subirVibe(event) {
+        // 🎬 ENGENHARIA DE FLUXO (Ponto 1 e 5: Conexão e Limite)
+        function processarVideo(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            const url = URL.createObjectURL(file);
-            adicionarAoFeed(url, "Você", true);
+            const urlBlob = URL.createObjectURL(file); // Corrigido para garantir o vídeo real
+            const feed = document.getElementById('vibe-feed');
             
-            // LÓGICA DE LIMPEZA (Gatilho de 20 para 5)
-            const totalVibes = document.querySelectorAll('.vibe-slide').length;
-            if(totalVibes > 20) {
-                document.querySelector('.vibe-slide').remove(); // Apaga o rastro mais antigo
-                console.log("OIO Protocol: Limpando rastro antigo para manter leveza.");
-            }
-        }
+            // Remove o placeholder no primeiro vídeo
+            const placeholder = document.getElementById('placeholder');
+            if (placeholder) placeholder.remove();
 
-        function adicionarAoFeed(url, autor, noTopo) {
-            const feed = document.getElementById('feed');
+            // Cria a nova lâmina de vídeo (Slide)
             const section = document.createElement('div');
             section.className = 'vibe-slide';
             section.innerHTML = `
-                <video src="${url}" loop playsinline></video>
-                <div class="acoes">
-                    <button class="btn-n" onclick="this.innerText = (this.innerText == '❤️' ? '💖' : '❤️')">❤️</button>
-                    <div class="label-v">0</div>
-                    <button class="btn-n">💬</button>
-                    <div class="label-v">0</div>
+                <video src="${urlBlob}" loop playsinline onclick="this.paused ? this.play() : this.pause()"></video>
+                <div class="lateral">
+                    <button class="btn-acao" onclick="curtir(this)">❤️</button>
+                    <div class="txt-v">0</div>
+                    <button class="btn-acao">💬</button>
+                    <div class="txt-v">0</div>
                 </div>
-                <div style="position:absolute; bottom:40px; left:20px; font-size:12px; text-shadow:1px 1px 2px #000;">@${autor}</div>
             `;
             
-            if(noTopo) feed.prepend(section); else feed.appendChild(section);
-            controlarVideos();
+            // Adiciona o vídeo no topo da lista (prepend para Conexão Real)
+            feed.prepend(section);
+            
+            // LÓGICA DE LIMPEZA (Gatilho Circular 20 para 5)
+            const totalSlides = document.querySelectorAll('.vibe-slide').length;
+            if(totalSlides > 20) {
+                // Remove o mais antigo (que está lá embaixo)
+                document.querySelector('.vibe-slide:last-child').remove();
+                console.log("OIO ONE: Fila Circular ativada. Memória antiga removida.");
+            }
+
+            gatilhoDeFoco(); // Ativa o play automático
         }
 
-        // Simulação inicial de vídeos na rede (Usuário 2 e 3)
-        // Quando você conectar o Firebase, essa parte será automática
-        iniciarRelogio();
-        function iniciarRelogio() {
-            const h = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-            document.getElementById("user-name").innerText = "Michel • " + h;
+        function curtir(btn) {
+            const txtNum = btn.nextElementSibling;
+            let n = parseInt(txtNum.innerText);
+            txtNum.innerText = n + 1;
+            btn.style.transform = "scale(1.3)";
+            setTimeout(() => btn.style.transform = "scale(1)", 200);
+            if(navigator.vibrate) navigator.vibrate(50);
+        }
+
+        // Simulação da Identidade Temporal
+        iniciarTempo();
+        function iniciarTempo() {
+            const agora = new Date();
+            const h = agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+            document.getElementById("nome-user").innerText = "Michel • " + h;
         }
     </script>
 </body>
