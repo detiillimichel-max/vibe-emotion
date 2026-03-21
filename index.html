@@ -4,22 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Vibe Emotion - OIO ONE</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 🎨 DESIGN TIKTOK ELITE OIO ONE - IGUAL À FOTO */
+        :root { --bg: #000; --accent: #00f2ea; }
+        body { margin: 0; background-color: #000; color: #fff; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Identidade no Topo */
+        header { position: absolute; top: 0; width: 100%; padding: 20px; display: flex; align-items: center; gap: 10px; z-index: 20; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
+        .avatar { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid #fff; }
+        .user-info { font-size: 14px; font-weight: 600; text-shadow: 1px 1px 3px #000; }
+
+        /* Player Centralizado */
+        #feed-container { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+        video { width: 100%; height: 100vh; object-fit: cover; } /* Efeito TikTok */
+
+        /* 📱 BOTÃO POSTAR (ESTILO IMAGEM 1000033904) */
+        .btn-postar { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: #ffffff; color: #000000; padding: 12px 28px; border-radius: 30px; font-weight: 800; border: none; box-shadow: 0 0 15px rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 100; font-size: 13px; text-transform: uppercase; cursor: pointer;}
+
+        /* ❤️ SIDEBAR TIKTOK (CURTIDA + VOLTAR PROFISSIONAL) */
+        .sidebar { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; align-items: center; gap: 25px; z-index: 30; }
+        .action-item { text-align: center; cursor: pointer;}
+        .icon-heart { font-size: 35px; filter: drop-shadow(0 0 5px #ff69b4); color: #ff69b4;}
+        .count { font-size: 12px; font-weight: bold; margin-top: 5px; text-shadow: 1px 1px 3px #000; }
+
+        /* Ícone Profissional de Voltar (Seta) */
+        .btn-back { width: 48px; height: 48px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.3s; }
+        .btn-back:active { transform: scale(0.9); }
+    </style>
 </head>
 <body>
 
     <header>
-        <img src="https://github.com/detiillimichel.png" class="avatar">
-        <div class="user-info">Michel • Agora</div>
+        <img src="https://github.com/detiillimichel.png" id="user-avatar" class="avatar">
+        <div class="user-info" id="user-display">Michel • Agora</div>
     </header>
 
     <main id="feed-container">
-        <video id="main-video" autoplay loop muted playsinline></video>
+        <video id="main-video" loop playsinline></video>
         
         <div class="sidebar">
-            <div class="action-item"><span class="icon-vibe" style="font-size:35px">💖</span><div class="count">0</div></div>
+            <div class="action-item" id="btn-like">
+                <span class="icon-heart">💖</span>
+                <div class="count" id="count-likes">0</div>
+            </div>
+            
             <div class="action-item" onclick="location.href='https://vibe-mensagens.vercel.app/'">
-                <div class="btn-back-chat">💬</div>
+                <div class="btn-back">↩️</div>
                 <div class="count">Chat</div>
             </div>
         </div>
@@ -38,31 +68,52 @@
         import { App } from './app.js';
         import { Uploader } from './upload.js';
         
+        // 🔑 CONFIGURAÇÃO OIO ONE (NÃO ALTERAR)
         const firebaseConfig = {
             apiKey: "AIzaSyAkJlFLnzPdwJUbn-J5Qk5DSlKmBl4ZYMZw",
             databaseURL: "https://vibe-app-bbba2-default-rtdb.firebaseio.com"
         };
-        
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        async function iniciar() {
-            try {
-                const vibes = await App.inicializar(db); 
-                const player = document.getElementById('main-video');
-                if(vibes && vibes.length > 0) {
-                    player.src = vibes[0].url;
-                    player.play();
-                }
-            } catch (e) { console.error("Erro ao iniciar:", e); }
+        let currentVibeId = null;
+
+        async function init() {
+            // 🧠 Inicializa com Login Integrado e Cache (Engine OIO ONE)
+            const oioData = await App.inicializar(db);
+            const user = oioData.user;
+            const vibes = oioData.vibes;
+
+            // Atualiza Login Dinâmico na UI
+            document.getElementById('user-display').innerText = `${user.name} • Agora`;
+            document.getElementById('user-avatar').src = user.photo;
+
+            const player = document.getElementById('main-video');
+            if(vibes && vibes[0]) {
+                currentVibeId = vibes[0].id;
+                player.src = vibes[0].url;
+                player.muted = false; // Começa com som
+                player.play();
+                
+                // Atualiza contadores dinâmicos
+                document.getElementById('count-likes').innerText = vibes[0].likes || 0;
+            }
         }
 
-        document.getElementById('file-up').onchange = (e) => {
-            const file = e.target.files[0];
-            if(file) Uploader.enviar(db, file, "Michel");
+        // Funções de Interação Profissional OIO ONE✨
+        const player = document.getElementById('main-video');
+        player.onclick = () => player.paused ? player.play() : player.pause();
+
+        document.getElementById('btn-like').onclick = async () => {
+            if(!currentVibeId) return;
+            const likeRef = db.ref(`vibes/${currentVibeId}/likes`);
+            await likeRef.transaction(current => (current || 0) + 1);
+            location.reload(); // Atualiza UI
         };
 
-        iniciar();
+        document.getElementById('file-up').onchange = (e) => Uploader.enviar(db, e.target.files[0]);
+
+        init();
     </script>
 </body>
 </html>
