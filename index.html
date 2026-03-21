@@ -3,32 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vibe Emotion - OIO ONE</title>
-    <style>
-        /* 🎨 DESIGN TIKTOK ELITE - OIO ONE ✨ */
-        :root { --bg: #000; --text: #fff; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-
-        /* Topo Limpo */
-        header { position: absolute; top: 0; width: 100%; padding: 20px; display: flex; align-items: center; gap: 10px; z-index: 20; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); }
-        .avatar { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid #fff; }
-        .user-info { font-size: 14px; font-weight: 600; text-shadow: 1px 1px 3px #000; }
-
-        /* Player Centralizado */
-        #feed-container { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
-        video { width: 100%; height: 100vh; object-fit: cover; } /* Efeito Tela Cheia TikTok */
-
-        /* 📱 BOTÃO POSTAR (ESTILO IMAGEM 1000033851) */
-        .btn-postar { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 28px; border-radius: 30px; font-weight: 800; border: none; box-shadow: 0 0 15px rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; z-index: 100; font-size: 13px; text-transform: uppercase; }
-
-        /* ❤️ SIDEBAR TIKTOK (CURTIDA + CHAT) */
-        .sidebar { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; align-items: center; gap: 25px; z-index: 30; }
-        .action-item { text-align: center; }
-        .icon-vibe { font-size: 35px; filter: drop-shadow(0 0 5px rgba(0,0,0,0.8)); }
-        .count { font-size: 12px; font-weight: bold; margin-top: 5px; }
-
-        .vibe-tag { position: absolute; bottom: 110px; left: 20px; font-size: 15px; font-weight: bold; text-shadow: 1px 1px 5px #000; z-index: 30; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -41,11 +16,12 @@
         <video id="main-video" autoplay loop muted playsinline></video>
         
         <div class="sidebar">
-            <div class="action-item"><span class="icon-heart" style="font-size:35px">💖</span><div class="count">0</div></div>
-            <div class="action-item" onclick="location.href='https://vibe-mensagens.vercel.app/'"><span class="icon-chat" style="font-size:35px">💬</span><div class="count">0</div></div>
+            <div class="action-item"><span class="icon-vibe">💖</span><div class="count">0</div></div>
+            <div class="action-item" onclick="location.href='https://vibe-mensagens.vercel.app/'">
+                <div class="btn-back-chat">💬</div>
+                <div class="count">Chat</div>
+            </div>
         </div>
-
-        <div class="vibe-tag">@Você</div>
     </main>
 
     <button class="btn-postar" onclick="document.getElementById('file-up').click()">
@@ -58,18 +34,23 @@
         import { App } from './app.js';
         import { Uploader } from './upload.js';
         
-        // Conexão com sua Engenharia OIO ONE
-        async function startTikTok() {
-            // Puxa do seu app.js (que usa o cache/vibe.js)
-            const vibes = await App.inicializar(); 
-            const player = document.getElementById('main-video');
+        // Configuração direta para o celular
+        const firebaseConfig = {
+            apiKey: "AIzaSyAkJlFLnzPdwJUbn-J5Qk5DSlKmBl4ZYMZw",
+            databaseURL: "https://vibe-app-bbba2-default-rtdb.firebaseio.com"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        async function init() {
+            const vibes = await App.inicializar(db); 
             if(vibes && vibes[0]) {
-                player.src = vibes[0].url;
+                document.getElementById('main-video').src = vibes[0].url;
             }
         }
 
-        document.getElementById('file-up').onchange = (e) => Uploader.enviar(null, e.target.files[0], "Michel");
-        startTikTok();
+        document.getElementById('file-up').onchange = (e) => Uploader.enviar(db, e.target.files[0], "Michel");
+        init();
     </script>
 </body>
 </html>
