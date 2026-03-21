@@ -1,0 +1,72 @@
+:root {
+    --bg-main: #0b141a;
+    --bg-card: #111b21;
+    --accent: #00a884;
+    --text-main: #e9edef;
+    --text-dim: #8696a0;
+    --radius: 18px;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: -apple-system, sans-serif;
+    margin: 0;
+    padding-bottom: 90px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+header {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(11, 20, 26, 0.95);
+    border-bottom: 1px solid #222;
+}
+
+.card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 15px;
+    margin: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.input-area {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: var(--bg-main);
+    padding: 15px;
+    display: flex;
+    gap: 10px;
+    box-sizing: border-box;
+    border-top: 1px solid #222;
+}
+
+input {
+    flex: 1;
+    background: #2a3942;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 15px;
+    color: #fff;
+    outline: none;
+}
+
+button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+button:active { transform: scale(0.95); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
