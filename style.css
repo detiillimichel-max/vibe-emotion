@@ -1,61 +1,18 @@
-:root {
-    --bg: #0b141a;
-    --card: #111b21;
-    --accent: #00a884;
-    --text: #e9edef;
-}
-
-body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: sans-serif;
-    margin: 0;
-    padding-bottom: 80px;
-}
-
-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 15px;
-    background: var(--card);
-    align-items: center;
-}
-
-.logo { font-weight: bold; color: var(--accent); }
-
-.card {
-    background: var(--card);
-    margin: 15px;
-    padding: 15px;
-    border-radius: 18px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-.input-area {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    padding: 15px;
-    display: flex;
-    gap: 10px;
-    background: var(--bg);
-    box-sizing: border-box;
-}
-
-.input-pill {
-    flex: 1;
-    background: #2a3942;
-    border-radius: 25px;
-    padding: 12px 20px;
-    color: #8696a0;
-}
-
-.btn-chat-icon {
-    background: var(--accent);
-    border: none;
-    width: 50px;
-    height: 50px;
+.btn-back-chat {
+    width: 45px;
+    height: 45px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(5px);
     border-radius: 50%;
-    font-size: 20px;
-    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border: 1px solid rgba(255,255,255,0.3);
+    transition: 0.3s;
+}
+
+.btn-back-chat:active {
+    transform: scale(0.9);
+    background: var(--accent);
 }
