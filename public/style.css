@@ -1,0 +1,173 @@
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🎨 OIO ONE - DESIGN SYSTEM (DARK PREMIUM)
+   Foco: WhatsApp + Facebook Mobile Style
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+:root {
+    /* Paleta Profissional Dark */
+    --bg-main: #0b141a;          /* Fundo base (WhatsApp Dark) */
+    --bg-card: #111b21;          /* Superfície dos cards */
+    --bg-input: #2a3942;         /* Campo de texto */
+    
+    /* Cores de Ação */
+    --accent: #00a884;           /* Verde oficial WhatsApp */
+    --accent-glow: rgba(0, 168, 132, 0.3);
+    
+    /* Chat Bubbles */
+    --msg-me: #005c4b;           /* Bolha enviada */
+    --msg-them: #202c33;         /* Bolha recebida */
+    
+    /* Tipografia e Feedback */
+    --text-main: #e9edef;
+    --text-dim: #8696a0;
+    --shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    --radius: 18px;
+    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 1. ESTRUTURA BASE */
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding-bottom: 90px; /* Garante que o input fixo não cubra conteúdo */
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+    user-select: none;
+}
+
+/* 2. CARDS (Estilo Feed Facebook) */
+.card, .vibe-post, .post-container {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin: 14px 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* 3. CHAT PROFISSIONAL (WhatsApp Style) */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px;
+}
+
+.message {
+    max-width: 82%;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 15.5px;
+    line-height: 1.42;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+/* Regra: Alinhamento das bolhas */
+.message.sent, .message.mine {
+    align-self: flex-end;
+    background-color: var(--msg-me);
+    border-top-right-radius: 4px; /* Ponta clássica */
+}
+
+.message.received, .message.them {
+    align-self: flex-start;
+    background-color: var(--msg-them);
+    border-top-left-radius: 4px;
+}
+
+/* 4. HUB DE APLICATIVOS (Grid 3 Colunas) */
+.menu-grid, .hub-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 24px;
+}
+
+.menu-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.menu-icon {
+    width: 62px;
+    height: 62px;
+    background: var(--bg-card);
+    border-radius: 20px; /* Estilo iOS App Icon */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: var(--shadow);
+}
+
+.menu-item span {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-dim);
+    text-align: center;
+}
+
+/* 5. BARRA DE INPUT (Fixa & Arredondada) */
+.input-area {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: var(--bg-main);
+    padding: 12px 16px 24px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    backdrop-filter: blur(10px);
+}
+
+input[type="text"] {
+    flex: 1;
+    background: var(--bg-input);
+    border: none;
+    border-radius: 26px;
+    padding: 12px 18px;
+    color: var(--text-main);
+    font-size: 16px;
+    outline: none;
+}
+
+/* 6. BOTÕES & FEEDBACK TÁTIL */
+button, .btn-primary {
+    border-radius: 25px;
+    border: none;
+    padding: 12px 24px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    background-color: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px var(--accent-glow);
+}
+
+/* Feedback ao toque (Regra: Scale 0.95) */
+button:active, .menu-item:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+}
+
+/* 7. ANIMAÇÕES LEVES */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ajuste para telas maiores */
+@media (min-width: 600px) {
+    body { max-width: 480px; margin: 0 auto; border-left: 1px solid #222; border-right: 1px solid #222; }
+}
+
