@@ -2,8 +2,8 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vibe Emotion - OIO ONE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OIO ONE - Vibe</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -11,15 +11,17 @@
 <body>
 
     <header>
-        <span style="font-weight:800; color:var(--accent)">✨ OIO ONE</span>
-        <button onclick="localStorage.removeItem('vibe_cache'); location.reload();" style="padding:5px 10px; font-size:12px">🔄 ATUALIZAR</button>
+        <span class="logo">✨ OIO ONE</span>
+        <button id="refresh-btn" class="btn-refresh">🔄 ATUALIZAR</button>
     </header>
 
-    <main id="feed-container"></main>
+    <main id="feed"></main>
 
     <div class="input-area">
-        <input type="text" placeholder="Postar vibe..." readonly onclick="document.getElementById('file-up').click()">
-        <button id="btn-chat-link">💬</button>
+        <div class="input-pill" onclick="document.getElementById('file-up').click()">
+            <span>Postar vibe...</span>
+        </div>
+        <button id="btn-chat" class="btn-chat-icon">💬</button>
     </div>
 
     <input type="file" id="file-up" style="display:none" accept="video/*">
@@ -35,27 +37,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        async function start() {
-            const vibes = await App.inicializar(db);
-            const container = document.getElementById('feed-container');
-            
-            vibes.forEach(v => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div style="color:var(--accent); font-size:12px; margin-bottom:10px">@${v.autor}</div>
-                    <div style="text-align:center">
-                        <button onclick="this.parentElement.innerHTML='<video src=\'${v.url}\' controls autoplay style=\'width:100%; border-radius:12px\'></video>'">▶️ ASSISTIR</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
+        // Inicializar App
+        App.renderizar(db, document.getElementById('feed'));
 
-        document.getElementById('btn-chat-link').onclick = App.navegarParaChat;
+        // Eventos
+        document.getElementById('btn-chat').onclick = () => window.location.href = 'https://vibe-mensagens.vercel.app/';
+        document.getElementById('refresh-btn').onclick = () => { localStorage.removeItem('vibe_cache'); location.reload(); };
         document.getElementById('file-up').onchange = (e) => Uploader.enviar(db, e.target.files[0], "Michel");
-
-        start();
     </script>
 </body>
 </html>
