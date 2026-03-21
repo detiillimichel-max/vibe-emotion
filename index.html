@@ -2,41 +2,32 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vibe Emotion - OIO ONE</title>
-    
     <link rel="stylesheet" href="style.css">
-
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
     <header>
-        <span>✨ OIO ONE</span>
-        <button id="btn-chat" class="btn-icon">💬</button>
+        <span style="font-weight:800; color:var(--accent)">✨ OIO ONE</span>
+        <button onclick="localStorage.removeItem('vibe_cache'); location.reload();" style="padding:5px 10px; font-size:12px">🔄 ATUALIZAR</button>
     </header>
 
-    <main id="video-feed">
-        <div class="card" style="text-align:center; padding:40px;">
-            <p style="color:var(--text-dim)">Iniciando conexão segura...</p>
-        </div>
-    </main>
+    <main id="feed-container"></main>
 
     <div class="input-area">
-        <button class="btn-icon" onclick="document.getElementById('file-upload').click()">➕</button>
-        <input type="text" placeholder="Compartilhe uma memória..." readonly onclick="document.getElementById('file-upload').click()">
-        <button id="btn-update" class="btn-primary" style="padding: 8px 15px; font-size: 10px;">🔄 ATUALIZAR</button>
+        <input type="text" placeholder="Postar vibe..." readonly onclick="document.getElementById('file-up').click()">
+        <button id="btn-chat-link">💬</button>
     </div>
 
-    <input type="file" id="file-upload" accept="video/*" style="display:none">
+    <input type="file" id="file-up" style="display:none" accept="video/*">
 
     <script type="module">
         import { App } from './app.js';
         import { Uploader } from './upload.js';
-        import { Cache } from './cache.js';
 
-        // 🔑 Configuração Firebase (Suas Chaves Michel)
         const firebaseConfig = {
             apiKey: "AIzaSyAkJlFLnzPdwJUbn-J5Qk5DSlKmBl4ZYMZw",
             databaseURL: "https://vibe-app-bbba2-default-rtdb.firebaseio.com"
@@ -44,50 +35,27 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 🚀 Inicialização do App
-        const feedContainer = document.getElementById('video-feed');
-        
-        async function rodarApp() {
+        async function start() {
             const vibes = await App.inicializar(db);
-            feedContainer.innerHTML = ''; // Limpa o "Carregando"
-
-            if (vibes.length === 0) {
-                feedContainer.innerHTML = '<div class="card"><p>Nenhuma memória encontrada.</p></div>';
-                return;
-            }
-
+            const container = document.getElementById('feed-container');
+            
             vibes.forEach(v => {
-                const post = document.createElement('div');
-                post.className = 'card vibe-post';
-                post.innerHTML = `
-                    <div style="padding:0 0 10px 0; font-size:12px; color:var(--accent)">@${v.autor}</div>
-                    <div class="preview-container" style="text-align:center;">
-                        <button class="btn-primary" onclick="window.carregarVideo(this, '${v.url}')">▶️ ASSISTIR VIBE</button>
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div style="color:var(--accent); font-size:12px; margin-bottom:10px">@${v.autor}</div>
+                    <div style="text-align:center">
+                        <button onclick="this.parentElement.innerHTML='<video src=\'${v.url}\' controls autoplay style=\'width:100%; border-radius:12px\'></video>'">▶️ ASSISTIR</button>
                     </div>
                 `;
-                feedContainer.appendChild(post);
+                container.appendChild(card);
             });
         }
 
-        // Funções de Interface
-        document.getElementById('btn-chat').onclick = App.navegarParaChat;
-        document.getElementById('btn-update').onclick = () => {
-            localStorage.removeItem("vibe_feed_cache");
-            location.reload();
-        };
+        document.getElementById('btn-chat-link').onclick = App.navegarParaChat;
+        document.getElementById('file-up').onchange = (e) => Uploader.enviar(db, e.target.files[0], "Michel");
 
-        // Escuta o Upload (Regra: Máx 800KB)
-        document.getElementById('file-upload').onchange = (e) => {
-            const user = localStorage.getItem("vibe_user") || "Michel";
-            Uploader.enviar(db, e.target.files[0], user);
-        };
-
-        // Função Global para Carregamento sob Clique (Regra 7)
-        window.carregarVideo = (btn, url) => {
-            btn.parentElement.innerHTML = `<video src="${url}" controls autoplay style="width:100%; border-radius:12px;"></video>`;
-        };
-
-        rodarApp();
+        start();
     </script>
 </body>
 </html>
