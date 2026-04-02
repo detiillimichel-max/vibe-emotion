@@ -1,3 +1,4 @@
+// src/chat/chatService.ts
 import { supabase } from "../lib/supabaseClient";
 
 // Upload de imagens
@@ -18,4 +19,23 @@ export async function uploadAudio(file: File): Promise<string> {
 
   if (error) throw error;
   return data.path;
+}
+
+// Enviar mensagens (texto, imagem ou áudio)
+export async function sendMessage(
+  roomId: string,
+  senderId: string,
+  receiverId: string,
+  content: string,
+  type: "text" | "audio" | "image" = "text"
+) {
+  const { error } = await supabase.from("messages").insert({
+    room_id: roomId,
+    sender_id: senderId,
+    receiver_id: receiverId,
+    content,
+    type,
+  });
+
+  if (error) throw error;
 }
