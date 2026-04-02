@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Correio Eletrônico</title>
+
+    <!-- Manifesto PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4A00E0" />
+
+    <!-- Ícone para favicon -->
+    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- Script do React/Vite -->
+    <script type="module" src="/src/index.tsx"></script>
+
+    <!-- Registro do Service Worker -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").then(() => {
+          console.log("Service Worker registrado!");
+        });
+      }
+    </script>
+  </body>
+</html>
