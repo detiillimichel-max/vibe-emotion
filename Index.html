@@ -1,31 +1,505 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Correio Eletrônico</title>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<title>OIO ONE · Família</title>
 
-    <!-- Manifesto PWA -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#4A00E0" />
+<!-- ✅ MANIFEST LINKADO -->
+<link rel="manifest" href="manifest.json">
 
-    <!-- Ícone para favicon -->
-    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
-  </head>
-  <body>
-    <!-- Ponto de montagem do React -->
-    <div id="root"></div>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Script principal do React/Vite -->
-    <script type="module" src="/src/index.tsx"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-storage-compat.js"></script>
 
-    <!-- Registro do Service Worker -->
-    <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/sw.js").then(() => {
-          console.log("Service Worker registrado!");
+<style>
+:root {
+  --accent:   #00e5ff;
+  --accent2:  #00a8bf;
+  --warm:     #ff6b35;
+  --love:     #ff2d55;
+  --glass:    rgba(255,255,255,0.07);
+  --glassh:   rgba(255,255,255,0.13);
+  --border:   rgba(255,255,255,0.10);
+  --bg:       #060608;
+  --surface:  #0d0d12;
+  --text:     #e8e8f0;
+  --muted:    #6a6a80;
+  --ff-head:  'Rajdhani', sans-serif;
+  --ff-body:  'Nunito', sans-serif;
+  --blur:     blur(22px);
+  --r:        18px;
+  --trans:    all 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; width:100%; overflow:hidden; position:fixed; background:var(--bg); color:var(--text); font-family:var(--ff-body); }
+#bg-canvas { position:fixed; inset:0; z-index:0; opacity:0.18; pointer-events:none; }
+
+/* TOPO */
+#topo {
+  position:fixed; top:0; left:0; right:0;
+  height:64px;
+  background:rgba(6,6,8,0.82);
+  backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 18px;
+  z-index:900;
+}
+.logo {
+  font-family:var(--ff-head); font-size:1.4rem; font-weight:700;
+  letter-spacing:3px; text-transform:uppercase;
+  background:linear-gradient(90deg, #fff 20%, var(--accent));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.logo-tag {
+  font-size:.55rem; letter-spacing:2px; color:var(--accent);
+  background:rgba(0,229,255,.12); border:1px solid rgba(0,229,255,.3);
+  padding:2px 6px; border-radius:6px;
+  -webkit-text-fill-color:var(--accent);
+  margin-left:8px; vertical-align:middle;
+}
+.topo-actions { display:flex; gap:16px; align-items:center; }
+.topo-btn { font-size:1.2rem; color:var(--muted); cursor:pointer; transition:var(--trans); }
+.topo-btn:active, .topo-btn:hover { color:var(--accent); }
+
+/* BARRA FAMÍLIA */
+#familia-bar {
+  position:fixed; top:64px; left:0; right:0;
+  height:88px;
+  background:rgba(6,6,8,0.75);
+  backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:14px;
+  padding:0 18px;
+  overflow-x:auto; scrollbar-width:none;
+  z-index:850;
+}
+#familia-bar::-webkit-scrollbar { display:none; }
+.membro { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; transition:var(--trans); }
+.membro-ring { width:52px; height:52px; border-radius:50%; padding:2.5px; background:var(--border); transition:var(--trans); }
+.membro.ativo .membro-ring { background:linear-gradient(135deg, var(--accent), var(--warm)); box-shadow:0 0 18px rgba(0,229,255,.35); }
+.membro-foto { width:100%; height:100%; border-radius:50%; background-size:cover; background-position:center; background-color:#1a1a22; display:flex; align-items:center; justify-content:center; font-size:1.3rem; border:2px solid var(--bg); overflow:hidden; }
+.membro-foto img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.membro-nome { font-size:.65rem; color:var(--muted); font-family:var(--ff-head); letter-spacing:1px; transition:var(--trans); }
+.membro.ativo .membro-nome { color:var(--accent); }
+.membro-add .membro-ring { background:var(--glass); border:1.5px dashed var(--border); }
+.membro-add .membro-foto { background:transparent; font-size:.9rem; color:var(--accent); }
+
+/* TELAS */
+.tela { position:fixed; inset:0; padding-top:152px; padding-bottom:72px; display:none; flex-direction:column; z-index:100; transition:opacity .3s ease; }
+.tela.ativa { display:flex; }
+#tela-chat { background:transparent; }
+
+/* CHAT */
+#mensagens { flex:1; overflow-y:auto; padding:16px 14px 8px; display:flex; flex-direction:column; gap:10px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+#mensagens::-webkit-scrollbar { width:3px; }
+#mensagens::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.balao-wrap { display:flex; flex-direction:column; gap:3px; }
+.balao-wrap.minha { align-items:flex-end; }
+.balao-wrap.deles { align-items:flex-start; }
+.balao-autor { font-size:.65rem; font-family:var(--ff-head); letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); opacity:.8; padding:0 6px; }
+.balao { max-width:78%; padding:12px 16px; border-radius:20px; font-size:.9rem; line-height:1.55; position:relative; word-break:break-word; animation:msgIn .28s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes msgIn { from { opacity:0; transform:translateY(14px) scale(.93); } to { opacity:1; transform:translateY(0) scale(1); } }
+.balao.deles { background:var(--glass); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid var(--border); border-bottom-left-radius:5px; }
+.balao.minha { background:linear-gradient(135deg, var(--accent2), var(--accent)); color:#000; font-weight:600; border-bottom-right-radius:5px; }
+.balao img { max-width:220px; width:100%; border-radius:12px; display:block; margin-top:8px; cursor:pointer; }
+.balao-video-wrap { position:relative; display:inline-block; margin-top:8px; border-radius:12px; overflow:hidden; max-width:220px; width:100%; cursor:pointer; }
+.balao-video-wrap video { width:100%; border-radius:12px; display:block; max-height:300px; object-fit:cover; }
+.balao-video-play { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.35); border-radius:12px; transition:opacity .2s; }
+.balao-video-play i { font-size:2rem; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.6); }
+.balao-video-wrap.playing .balao-video-play { opacity:0; }
+.balao audio { width:100%; margin-top:8px; }
+.audio-msg { display:flex; align-items:center; gap:12px; padding:10px 14px; background:rgba(0,229,255,.08); border:1px solid rgba(0,229,255,.2); border-radius:14px; margin-top:6px; cursor:pointer; }
+.audio-msg i { font-size:1.1rem; color:var(--accent); }
+.audio-msg span { font-size:.78rem; color:var(--text); }
+.balao.minha .audio-msg { background:rgba(0,0,0,.15); border-color:rgba(0,0,0,.2); }
+.balao.minha .audio-msg i, .balao.minha .audio-msg span { color:#000; }
+.balao-time { font-size:.6rem; margin-top:6px; display:block; opacity:.55; font-family:var(--ff-head); }
+.balao.minha .balao-time { text-align:right; color:rgba(0,0,0,.5); }
+
+/* CONTROLES */
+#controles {
+  position:fixed; bottom:0; left:0; right:0;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));
+  background:rgba(6,6,8,.92);
+  backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur);
+  border-top:1px solid var(--border);
+  display:flex; align-items:center; gap:10px; z-index:900;
+}
+.ctrl-btn { width:42px; height:42px; border-radius:50%; background:var(--glass); border:1px solid var(--border); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1rem; cursor:pointer; flex-shrink:0; transition:var(--trans); }
+.ctrl-btn:active { transform:scale(.88); background:var(--glassh); }
+.ctrl-btn.gravando { background:rgba(255,45,85,.15); border-color:var(--love); color:var(--love); animation:pulseMic 1s infinite; }
+@keyframes pulseMic { 0%,100% { box-shadow:0 0 0 0 rgba(255,45,85,.5); } 50% { box-shadow:0 0 0 8px rgba(255,45,85,0); } }
+#msgInput { flex:1; background:#13131a; border:1px solid var(--border); color:var(--text); padding:12px 18px; border-radius:28px; font-size:.9rem; font-family:var(--ff-body); outline:none; transition:var(--trans); }
+#msgInput:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(0,229,255,.08); }
+#msgInput::placeholder { color:var(--muted); }
+.ctrl-send { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg, var(--accent2), var(--accent)); border:none; color:#000; font-size:1rem; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; box-shadow:0 4px 16px rgba(0,229,255,.35); transition:var(--trans); }
+.ctrl-send:active { transform:scale(.88); }
+
+/* =============================================
+   GALERIA — ESTILO TELEGRAM
+   ============================================= */
+#tela-galeria { background:rgba(6,6,8,.97); }
+
+.galeria-header {
+  padding:0 18px 14px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.galeria-title {
+  font-family:var(--ff-head); font-size:1.25rem; font-weight:700; letter-spacing:2px;
+}
+.btn-postar {
+  background:linear-gradient(135deg, var(--accent2), var(--accent));
+  color:#000; border:none; padding:10px 20px; border-radius:20px;
+  font-family:var(--ff-head); font-size:.85rem; font-weight:700;
+  letter-spacing:1px; cursor:pointer; transition:var(--trans);
+  display:flex; align-items:center; gap:8px;
+}
+.btn-postar:active { transform:scale(.95); }
+
+/* Upload progress overlay */
+.upload-progress-wrap {
+  padding:0 18px 10px;
+  display:none;
+}
+.upload-progress-wrap.visivel { display:block; }
+.upload-bar-bg {
+  height:4px; background:var(--border); border-radius:2px; overflow:hidden;
+}
+.upload-bar-fill {
+  height:100%; width:0%; background:linear-gradient(90deg,var(--accent2),var(--accent));
+  border-radius:2px; transition:width .2s linear;
+  box-shadow:0 0 8px var(--accent);
+}
+.upload-label {
+  font-size:.68rem; color:var(--accent); font-family:var(--ff-head);
+  letter-spacing:1px; margin-bottom:6px;
+}
+
+/* Grid 3 colunas estilo Telegram */
+#grid-videos {
+  flex:1; overflow-y:auto;
+  padding:0 14px 14px;
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:3px;
+  align-content:start;
+  scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+}
+#grid-videos::-webkit-scrollbar { width:3px; }
+#grid-videos::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+/* Card do vídeo - proporção quadrada estilo Telegram */
+.video-card {
+  aspect-ratio:1/1;
+  border-radius:4px;
+  overflow:hidden;
+  background:#0d0d14;
+  position:relative;
+  cursor:pointer;
+  transition:transform .18s ease;
+}
+.video-card:active { transform:scale(.96); }
+.video-card video {
+  width:100%; height:100%; object-fit:cover; display:block;
+  pointer-events:none;
+}
+
+/* Overlay escuro com info */
+.video-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,.75) 0%, rgba(0,0,0,.15) 45%, transparent 70%);
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:7px 8px;
+}
+
+/* Ícone play centralizado */
+.video-play-icon {
+  position:absolute;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(0,0,0,.5);
+  backdrop-filter:blur(4px);
+  display:flex; align-items:center; justify-content:center;
+  pointer-events:none;
+  transition:opacity .2s;
+}
+.video-play-icon i { font-size:.9rem; color:#fff; margin-left:2px; }
+.video-card.playing .video-play-icon { opacity:0; }
+
+/* Duração top-right */
+.video-duration {
+  align-self:flex-end;
+  font-size:.6rem; font-family:var(--ff-head); font-weight:700;
+  color:#fff; letter-spacing:.5px;
+  background:rgba(0,0,0,.55); padding:2px 6px; border-radius:6px;
+}
+
+/* Footer do card */
+.video-card-footer {
+  display:flex; justify-content:space-between; align-items:center;
+}
+.video-autor {
+  font-size:.6rem; color:rgba(255,255,255,.85);
+  font-family:var(--ff-head); letter-spacing:.8px;
+  text-transform:uppercase; max-width:65%; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap;
+}
+.btn-like {
+  display:flex; align-items:center; gap:4px;
+  background:rgba(0,0,0,.4); padding:4px 8px;
+  border-radius:20px; cursor:pointer; font-size:.65rem;
+  color:rgba(255,255,255,.8); border:1px solid rgba(255,255,255,.15);
+  transition:var(--trans);
+}
+.btn-like.curtido { color:var(--love); border-color:rgba(255,45,85,.5); }
+.btn-like:active { transform:scale(.85); }
+
+/* Viewer fullscreen estilo Telegram */
+#video-viewer {
+  position:fixed; inset:0; z-index:2000;
+  background:#000;
+  display:none; align-items:center; justify-content:center;
+  flex-direction:column;
+}
+#video-viewer.aberto { display:flex; }
+#video-viewer video {
+  width:100%; height:100%; object-fit:contain;
+}
+.viewer-close {
+  position:absolute; top:calc(16px + env(safe-area-inset-top,0px)); right:18px;
+  width:38px; height:38px; border-radius:50%;
+  background:rgba(255,255,255,.12);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.1rem; color:#fff; cursor:pointer; z-index:2001;
+}
+.viewer-info {
+  position:absolute; bottom:calc(24px + env(safe-area-inset-bottom,0px)); left:0; right:0;
+  padding:0 20px; display:flex; justify-content:space-between; align-items:center;
+}
+.viewer-autor { font-family:var(--ff-head); font-size:.85rem; letter-spacing:1.5px; color:#fff; opacity:.8; }
+.viewer-like {
+  display:flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,.12); padding:10px 18px;
+  border-radius:24px; cursor:pointer; font-size:.9rem; color:#fff;
+  border:1px solid rgba(255,255,255,.2); transition:var(--trans);
+}
+.viewer-like.curtido { color:var(--love); border-color:rgba(255,45,85,.4); }
+.viewer-like:active { transform:scale(.9); }
+
+/* MISC */
+#progresso { position:fixed; top:0; left:0; height:3px; width:0%; background:linear-gradient(90deg, var(--accent2), var(--accent)); z-index:9999; box-shadow:0 0 10px var(--accent); transition:width .3s linear; }
+#toasts { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); z-index:9998; display:flex; flex-direction:column-reverse; gap:8px; pointer-events:none; width:88%; }
+.toast { background:rgba(0,229,255,.12); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(0,229,255,.3); padding:12px 18px; border-radius:14px; font-size:.82rem; text-align:center; animation:toastIn .3s ease-out; }
+@keyframes toastIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* MODAL */
+.modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur); z-index:1100; display:none; align-items:flex-end; }
+.modal-bg.aberto { display:flex; }
+.modal-sheet { width:100%; background:#0d0d14; border:1px solid var(--border); border-radius:24px 24px 0 0; padding:20px 22px calc(24px + env(safe-area-inset-bottom,0px)); animation:sheetUp .35s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-handle { width:38px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
+.modal-title { font-family:var(--ff-head); font-size:1.1rem; font-weight:700; letter-spacing:2px; margin-bottom:18px; }
+.modal-input { width:100%; background:#13131a; border:1px solid var(--border); color:var(--text); padding:14px 18px; border-radius:14px; font-size:.9rem; font-family:var(--ff-body); outline:none; margin-bottom:14px; transition:var(--trans); }
+.modal-input:focus { border-color:var(--accent); }
+.modal-ok { width:100%; padding:15px; background:linear-gradient(135deg, var(--accent2), var(--accent)); color:#000; border:none; border-radius:14px; font-family:var(--ff-head); font-size:.95rem; font-weight:700; letter-spacing:1px; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div id="progresso"></div>
+<canvas id="bg-canvas"></canvas>
+<div id="toasts"></div>
+
+<header id="topo">
+  <div class="logo">OIO ONE<span class="logo-tag">FAMÍLIA</span></div>
+  <div class="topo-actions">
+    <i class="fa-solid fa-video topo-btn" onclick="abrirTela('galeria')"></i>
+    <i class="fa-solid fa-comment-dots topo-btn" onclick="abrirTela('chat')"></i>
+  </div>
+</header>
+
+<div id="familia-bar"></div>
+
+<!-- CHAT -->
+<section class="tela ativa" id="tela-chat">
+  <div id="mensagens"></div>
+</section>
+
+<!-- GALERIA -->
+<section class="tela" id="tela-galeria">
+  <div class="galeria-header">
+    <div class="galeria-title">GALERIA</div>
+    <button class="btn-postar" onclick="document.getElementById('videoInput').click()">
+      <i class="fa-solid fa-plus"></i> POSTAR
+    </button>
+  </div>
+  <div class="upload-progress-wrap" id="uploadWrap">
+    <div class="upload-label" id="uploadLabel">ENVIANDO...</div>
+    <div class="upload-bar-bg"><div class="upload-bar-fill" id="uploadFill"></div></div>
+  </div>
+  <div id="grid-videos"></div>
+</section>
+
+<!-- Viewer fullscreen -->
+<div id="video-viewer">
+  <video id="viewer-video" controls playsinline></video>
+  <div class="viewer-close" onclick="fecharViewer()"><i class="fa-solid fa-xmark"></i></div>
+  <div class="viewer-info">
+    <span class="viewer-autor" id="viewer-autor"></span>
+    <div class="viewer-like" id="viewer-like-btn" onclick="curtirViewerVideo()">
+      <i class="fa-solid fa-heart"></i>
+      <span id="viewer-likes">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- CONTROLES CHAT -->
+<div id="controles">
+  <div class="ctrl-btn" onclick="document.getElementById('midiaInput').click()">
+    <i class="fa-solid fa-camera"></i>
+  </div>
+  <div class="ctrl-btn" id="btnMic" onclick="toggleGravacao()">
+    <i class="fa-solid fa-microphone"></i>
+  </div>
+  <input type="text" id="msgInput" placeholder="Mensagem para a família..." autocomplete="off">
+  <button class="ctrl-send" onclick="enviar()">
+    <i class="fa-solid fa-paper-plane"></i>
+  </button>
+</div>
+
+<input type="file" id="midiaInput"  accept="image/*,video/*" style="display:none">
+<input type="file" id="videoInput"  accept="video/*"         style="display:none">
+<input type="file" id="fotoMembro"  accept="image/*"         style="display:none">
+
+<div class="modal-bg" id="modalMembro" onclick="fecharModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">NOVO MEMBRO</div>
+    <input class="modal-input" id="novoNome" placeholder="Nome da pessoa..." maxlength="20">
+    <button class="modal-ok" onclick="adicionarMembro()">ADICIONAR À FAMÍLIA</button>
+  </div>
+</div>
+
+<script>
+/* =========================================
+   FIREBASE
+   ========================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyAWL1XRR8JK-J5Qk5DSIKmBl4ZYMZw1R4I",
+  databaseURL: "https://vibe-app-bbba2-default-rtdb.firebaseio.com/",
+  projectId: "vibe-app-bbba2",
+  storageBucket: "vibe-app-bbba2.appspot.com"
+};
+firebase.initializeApp(firebaseConfig);
+const db       = firebase.database();
+const storage  = firebase.storage();
+const dbMsg    = db.ref("familia_mensagens");
+const dbVideos = db.ref("familia_videos");
+
+/* =========================================
+   USUÁRIO
+   ========================================= */
+let meuNome = localStorage.getItem("oio_nome") || "";
+if (!meuNome) {
+  meuNome = prompt("OIO ONE · Família\n\nQual é o seu nome?") || "Visitante";
+  localStorage.setItem("oio_nome", meuNome);
+}
+let minhaFoto = localStorage.getItem("oio_foto") || "";
+
+/* =========================================
+   ÁUDIO / SOM
+   ========================================= */
+const AC = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function getAC() { if (!audioCtx) audioCtx = new AC(); return audioCtx; }
+
+function beep
+
+
+
+
+sw.js
+
+
+const CACHE_NAME = 'oio-familia-v2';
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+  'https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap'
+];
+
+// Instalação — pré-cache dos assets essenciais
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return Promise.allSettled(
+        ASSETS.map(url => cache.add(url).catch(() => console.warn('Cache miss:', url)))
+      );
+    })
+  );
+});
+
+// Ativação — limpa caches antigos e toma controle imediato
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all([
+        ...keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)),
+        self.clients.claim()
+      ]);
+    })
+  );
+});
+
+// Estratégia: Network First com fallback para cache
+// Firebase e Storage sempre vão para rede (nunca cacheados)
+self.addEventListener('fetch', (event) => {
+  const url = event.request.url;
+
+  // Deixa Firebase, Storage e APIs sempre ir para a rede
+  if (
+    url.includes('firebaseio.com') ||
+    url.includes('firebasestorage') ||
+    url.includes('googleapis.com/upload') ||
+    url.includes('gstatic.com/firebasejs') ||
+    event.request.method !== 'GET'
+  ) {
+    return; // comportamento padrão do browser
+  }
+
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        // Clona e guarda no cache se for resposta válida
+        if (response && response.status === 200 && response.type !== 'opaque') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      })
+      .catch(() => {
+        // Sem rede: tenta o cache
+        return caches.match(event.request).then(cached => {
+          if (cached) return cached;
+          // Fallback para o index quando offline
+          if (event.request.destination === 'document') {
+            return caches.match('/index.html');
+          }
         });
-      }
-    </script>
-  </body>
-</html>
+      })
+  );
+});
+
+
